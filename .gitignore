@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.html
+*.sublime-project
+*.sublime-workspace
+data/
+references/
+paper/
+output/
