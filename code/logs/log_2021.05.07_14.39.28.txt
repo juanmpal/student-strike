@@ -1,0 +1,127 @@
+------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/juanc/Google Drive/research/student-strike/code/logs/log_2021.05.07_14.39.28.txt
+  log type:  text
+ opened on:   7 May 2021, 14:39:28
+
+. 
+. di "Begin date and time: $S_DATE $S_TIME"
+Begin date and time:  7 May 2021 14:39:28
+
+. di "Stata version: `c(stata_version)'"
+Stata version: 16
+
+. di "Updated as of: `c(born_date)'"
+Updated as of: 25 Jun 2019
+
+. di "Variant:       `=cond( c(MP),"MP",cond(c(SE),"SE",c(flavor)) )'"
+Variant:       MP
+
+. di "Processors:    `c(processors)'"
+Processors:    4
+
+. di "OS:            `c(os)' `c(osdtl)'"
+OS:            Windows 64-bit
+
+. di "Machine type:  `c(machine_type)'"
+Machine type:  PC (64-bit x86-64)
+
+. 
+. * All required Stata packages are available in the /libraries/stata folder
+. adopath ++ "$student_strike/code/libraries/stata"
+  [1]              "C:/Users/juanc/Google Drive/research/student-strike/code/libraries/stata"
+  [2]  (BASE)      "C:\Program Files (x86)\Stata16\ado\base/"
+  [3]  (SITE)      "C:\Program Files (x86)\Stata16\ado\site/"
+  [4]              "."
+  [5]  (PERSONAL)  "c:\ado\personal/"
+  [6]  (PLUS)      "c:\ado\plus/"
+  [7]  (OLDPLACE)  "c:\ado/"
+
+. mata: mata mlib index
+.mlib libraries to be searched are now
+    lmatabase;lmataado;lmataerm;lmatafc;lmatagsem;lmatalasso;lmatamcmc;lmatameta;lmatamixlog;lmatanumlib;lmataopt;lmatapath;lmatapostest;lmataps
+> s;lmatasem;lmatasp;lmatasvy;lmatatab;lasreg;livreg2;lxtabond2
+
+. 
+. * R packages can be installed manually (see README) or installed automatically by uncommenting the following line
+. * if "$DisableR"!="1" rscript using "$student_strike/code/programs/_install_R_packages.R"
+. 
+. * Stata programs and R code are stored in /programs
+. adopath ++ "$student_strike/code/programs"
+  [1]              "C:/Users/juanc/Google Drive/research/student-strike/code/programs"
+  [2]              "C:/Users/juanc/Google Drive/research/student-strike/code/libraries/stata"
+  [3]  (BASE)      "C:\Program Files (x86)\Stata16\ado\base/"
+  [4]  (SITE)      "C:\Program Files (x86)\Stata16\ado\site/"
+  [5]              "."
+  [6]  (PERSONAL)  "c:\ado\personal/"
+  [7]  (PLUS)      "c:\ado\plus/"
+  [8]  (OLDPLACE)  "c:\ado/"
+
+. 
+. * Stata and R version control
+. version 16
+
+. if "$DisableR"!="1" rscript using "$student_strike/code/programs/_confirm_verison.R"
+
+. 
+. * Create directories for output files
+. cap mkdir "$student_strike/data/analytical"
+
+. cap mkdir "$student_strike/output"
+
+. cap mkdir "$student_strike/output/figures"
+
+. cap mkdir "$student_strike/output/intermediate"
+
+. cap mkdir "$student_strike/output/tables"
+
+. 
+. * Run project analysis
+. do "$student_strike/code/prepare.do"
+file C:/Users/juanc/Google Drive/research/student-strike/code/prepare.do not found
+r(601);
+
+end of do-file
+
+r(601);
+
+. do "c:\users\juanc\appdata\local\temp\st_stata_temp.tmp"
+
+. **********************
+. * OVERVIEW
+. *   All raw data are stored in /data
+. *   All tables are outputted to /output/tables
+. *   All figures are outputted to /output/figures
+. * 
+. * SOFTWARE REQUIREMENTS
+. *   Analyses run on Windows using Stata version 15 and R-3.6.0
+. *
+. * TO PERFORM A CLEAN RUN, DELETE THE FOLLOWING TWO FOLDERS:
+. *   /processed
+. *   /output
+. **********************
+. 
+. * User must define two global macros in order to run the analysis:
+. * (1) "student_strike" points to the project folder
+. * (2) "RSCRIPT_PATH" points to the folder containing the executables for R-3.6.0 (or newer)
+. * global student_strike "C:/Users/jdoe/student_strike"
+. * global RSCRIPT_PATH "C:/Program Files/R/R-3.6.0/bin/x64"
+. 
+. * To disable the R portion of the analysis, set the following flag to 1
+. global DisableR = 1
+
+. 
+. * Confirm that the globals for the project root directory and the R executable have been defined
+. assert !missing("$student_strike")
+
+. if "$DisableR"!="1" assert !missing("$RSCRIPT_PATH")
+
+. 
+. * Initialize log and record system parameters
+. clear 
+
+. set more off
+
+. cap mkdir "$student_strike/code/logs"
+
+. cap log close

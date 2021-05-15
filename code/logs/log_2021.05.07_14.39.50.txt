@@ -1,0 +1,904 @@
+------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/juanc/Google Drive/research/student-strike/code/logs/log_2021.05.07_14.39.50.txt
+  log type:  text
+ opened on:   7 May 2021, 14:39:50
+
+. 
+. di "Begin date and time: $S_DATE $S_TIME"
+Begin date and time:  7 May 2021 14:39:50
+
+. di "Stata version: `c(stata_version)'"
+Stata version: 16
+
+. di "Updated as of: `c(born_date)'"
+Updated as of: 25 Jun 2019
+
+. di "Variant:       `=cond( c(MP),"MP",cond(c(SE),"SE",c(flavor)) )'"
+Variant:       MP
+
+. di "Processors:    `c(processors)'"
+Processors:    4
+
+. di "OS:            `c(os)' `c(osdtl)'"
+OS:            Windows 64-bit
+
+. di "Machine type:  `c(machine_type)'"
+Machine type:  PC (64-bit x86-64)
+
+. 
+. * All required Stata packages are available in the /libraries/stata folder
+. adopath ++ "$student_strike/code/libraries/stata"
+  [1]              "C:/Users/juanc/Google Drive/research/student-strike/code/libraries/stata"
+  [2]              "C:/Users/juanc/Google Drive/research/student-strike/code/programs"
+  [3]  (BASE)      "C:\Program Files (x86)\Stata16\ado\base/"
+  [4]  (SITE)      "C:\Program Files (x86)\Stata16\ado\site/"
+  [5]              "."
+  [6]  (PERSONAL)  "c:\ado\personal/"
+  [7]  (PLUS)      "c:\ado\plus/"
+  [8]  (OLDPLACE)  "c:\ado/"
+
+. mata: mata mlib index
+.mlib libraries to be searched are now
+    lmatabase;lmataado;lmataerm;lmatafc;lmatagsem;lmatalasso;lmatamcmc;lmatameta;lmatamixlog;lmatanumlib;lmataopt;lmatapath;lmatapostest;lmataps
+> s;lmatasem;lmatasp;lmatasvy;lmatatab;lasreg;livreg2;lxtabond2
+
+. 
+. * R packages can be installed manually (see README) or installed automatically by uncommenting the following line
+. * if "$DisableR"!="1" rscript using "$student_strike/code/programs/_install_R_packages.R"
+. 
+. * Stata programs and R code are stored in /programs
+. adopath ++ "$student_strike/code/programs"
+  [1]              "C:/Users/juanc/Google Drive/research/student-strike/code/programs"
+  [2]              "C:/Users/juanc/Google Drive/research/student-strike/code/libraries/stata"
+  [3]  (BASE)      "C:\Program Files (x86)\Stata16\ado\base/"
+  [4]  (SITE)      "C:\Program Files (x86)\Stata16\ado\site/"
+  [5]              "."
+  [6]  (PERSONAL)  "c:\ado\personal/"
+  [7]  (PLUS)      "c:\ado\plus/"
+  [8]  (OLDPLACE)  "c:\ado/"
+
+. 
+. * Stata and R version control
+. version 16
+
+. if "$DisableR"!="1" rscript using "$student_strike/code/programs/_confirm_verison.R"
+
+. 
+. * Create directories for output files
+. cap mkdir "$student_strike/data/analytical"
+
+. cap mkdir "$student_strike/output"
+
+. cap mkdir "$student_strike/output/figures"
+
+. cap mkdir "$student_strike/output/intermediate"
+
+. cap mkdir "$student_strike/output/tables"
+
+. 
+. * Run project analysis
+. do "$student_strike/code/master-prepare.do"
+
+. clear all
+
+. set more off
+
+. 
+. *master-prepare.do
+. 
+. *This do file:
+. *Makes all dbs and appends into panel
+. 
+. cd "C:/Users/juanc/Google Drive/research/student-strike"
+C:\Users\juanc\Google Drive\research\student-strike
+
+. loc data = "C:/research/student-strike/data"
+
+. 
+. 
+. do "code/prepare2016.do"
+
+. set more off
+
+. clear all
+
+. 
+. /*=================
+>         prepare2016.do
+> ===================
+> 
+> *This do file
+> 1- Merges student with principal base
+> 2- Generates variables of interest
+> 
+> Remark: 2016 and 2017 dbs were already processed for a previous project and
+> couldn't recover the raw, original ones. So for those two cases I start from
+> an intermediate db and accustom them to this project
+> 
+> ====================================*/
+. 
+. 
+. *Directory structure
+. cd "C:/Users/juanc/Google Drive/research/student-strike"
+C:\Users\juanc\Google Drive\research\student-strike
+
+. loc data = "C:/research/student-strike/data"
+
+. loc db_merge = "`data'/raw/principal-student-2016.dta"
+
+. 
+. 
+. /*=======================================
+>         1) Merge Student with Principal DBs
+>                         (Only for 2019)
+> ========================================*/
+. 
+. 
+. *not for this year
+. 
+. 
+. 
+. /*=======================================
+>                 2) Variable Creation
+> ========================================*/
+. /*
+> 
+> 2.1) Test Scores
+> 2.2) Identifiers
+> 2.3) Socioeconomic variables
+> 
+> */
+. 
+. 
+. use `db_merge', clear
+
+. 
+. /*====================
+>         2.1) Test Scores
+> ======================*/
+. 
+. rename mscore mscore_old
+
+. rename lscore lscore_old
+
+. 
+. gen mscore = mpuntaje
+(53,852 missing values generated)
+
+. gen lscore = lpuntaje
+(73,760 missing values generated)
+
+. 
+. *(Log) Test Scores
+. 
+. * Lengua
+. gen log_lscore = log(lpuntaje)
+(73,760 missing values generated)
+
+. 
+. * Matematica
+. gen log_mscore = log(mpuntaje)
+(53,852 missing values generated)
+
+. 
+. 
+. label define leng2 1"Por debajo de nivel basico" 2"Nivel Basico" ///
+>         3"Nivel Satisfactorio" 4"Nivel Avanzado"
+
+. label values ldesemp leng2
+
+. 
+. label define mate2 1"Por debajo de nivel basico" 2"Nivel Basico" ///
+>         3"Nivel Satisfactorio" 4"Nivel Avanzado"
+
+. label values mdesemp mate2
+
+. 
+. 
+. 
+. 
+. *Standardized Test Scores
+. 
+. * Lengua
+. gen lscore_std = .
+(331,852 missing values generated)
+
+. replace lscore_std = lscore / 880
+(258,092 real changes made)
+
+. 
+. * Matematica
+. gen mscore_std = .
+(331,852 missing values generated)
+
+. replace mscore_std = mscore / 880
+(278,000 real changes made)
+
+. 
+. 
+. 
+. 
+. 
+. /*================================
+>                 2.2) Identifiers
+> ==================================*/
+. 
+. gen year = 2016
+
+. 
+. 
+. 
+. gen idschool = CUEANEXO
+
+. destring idschool, replace
+idschool: all characters numeric; replaced as long
+
+. *gen idclass = seccion
+. *destring idclass, replace
+. *encode CUEANEXO, gen(idschool)
+. encode seccion, gen(idclass)
+
+. 
+. bysort idclass: gen idstudent = _n
+
+. 
+. rename region region_old
+
+. gen region = cod_provincia
+
+. destring region, replace
+region: all characters numeric; replaced as byte
+
+. *encode cod_provincia, gen(region)
+. 
+. 
+. 
+. 
+. 
+. /*================================
+>         2.3) Socioeconomic variables
+> ==================================*/
+. 
+. 
+. 
+. *private (vs public school)
+. gen     private = .
+(331,852 missing values generated)
+
+. replace private = 0 if sector == 1
+(196,191 real changes made)
+
+. replace private = 1 if sector == 2
+(135,641 real changes made)
+
+. 
+. *urban (vs rural school)
+. gen     urban = .
+(331,852 missing values generated)
+
+. replace urban = 0 if ambito == 1
+(308,259 real changes made)
+
+. replace urban = 1 if ambito == 2
+(23,573 real changes made)
+
+. 
+. 
+. *dummy women
+. gen     women = 0 if Ap2 == 1
+(217,387 missing values generated)
+
+. replace women = 1 if Ap2 == 2
+(145,102 real changes made)
+
+. 
+. 
+. *foreign
+. *0=Argentina, 1=Any other country
+. gen     foreign = .
+(331,852 missing values generated)
+
+. replace foreign = 1 if Ap3a==1
+(255,800 real changes made)
+
+. replace foreign = 0 if Ap3a!=1 & Ap3a!=-1 & Ap3a!=-9
+(6,907 real changes made)
+
+. 
+. label define foreign 0 "Argentine" 1 "Foreign"
+
+. label values foreign foreign
+
+. 
+. 
+. 
+. *child: if has any child
+. gen     child = .
+(331,852 missing values generated)
+
+. replace child = 0 if Ap12 == 2
+(272,469 real changes made)
+
+. replace child = 1 if Ap12 == 1
+(9,423 real changes made)
+
+. 
+. 
+. *internet: if has internet connection at home
+. rename internet internet_old
+
+. gen     internet = .
+(331,852 missing values generated)
+
+. // replace internet = 0 if ap11_08 == 2
+. // replace internet = 1 if ap11_08 == 1
+. 
+. 
+. *internet_phone: if can access internet through internet_phone
+. gen       internet_phone = .
+(331,852 missing values generated)
+
+. // replace   internet_phone = 0 if ap13 == 2
+. // replace   internet_phone = 1 if ap13 == 1
+. // label var internet_phone "If can access internet via phone"
+. 
+. 
+. *educ_mother: mother's education level
+.         *1=prii 2=pric 3=seci 4=secc 5=supi/supc        
+. gen              educ_mother = .
+(331,852 missing values generated)
+
+. replace          educ_mother = 1 if Ap7==1
+(19,661 real changes made)
+
+. replace          educ_mother = 2 if Ap7==2
+(35,513 real changes made)
+
+. replace          educ_mother = 3 if Ap7==3
+(56,500 real changes made)
+
+. replace          educ_mother = 4 if Ap7==4
+(77,730 real changes made)
+
+. replace          educ_mother = 5 if Ap7==6
+(51,009 real changes made)
+
+. label define educ_mother        1"Primary Incomplete"   ///
+>                                                         2"Primary Complete"     ///
+>                                                         3"Secondary Incomplete" ///
+>                                                         4"Secondary Complete"   ///
+>                                                         5"Superior (Complete or incomplete)"
+
+. label values educ_mother educ_mother
+
+. 
+. 
+. 
+. *educ_father: father's education level
+.         *1=prii 2=pric 3=seci 4=secc 5=supi/supc        
+. gen              educ_father = .
+(331,852 missing values generated)
+
+. replace          educ_father = 1 if Ap8==1
+(23,032 real changes made)
+
+. replace          educ_father = 2 if Ap8==2
+(35,296 real changes made)
+
+. replace          educ_father = 3 if Ap8==3
+(58,515 real changes made)
+
+. replace          educ_father = 4 if Ap8==4
+(71,965 real changes made)
+
+. replace          educ_father = 5 if Ap8==6
+(43,326 real changes made)
+
+. label define educ_father        1"Primary Incomplete"   ///
+>                                                         2"Primary Complete"     ///
+>                                                         3"Secondary Incomplete" ///
+>                                                         4"Secondary Complete"   ///
+>                                                         5"Superior (Complete or incomplete)"
+
+. label values educ_father educ_father
+
+. 
+. 
+. 
+. *work: if works outside home
+. gen     work = .
+(331,852 missing values generated)
+
+. replace work = 0 if Ap11 == 1
+(76,818 real changes made)
+
+. replace work = 1 if Ap11 == 2
+(213,133 real changes made)
+
+. 
+. 
+. 
+. *kinder: if went to kindergarden
+. gen     kinder = .
+(331,852 missing values generated)
+
+. replace kinder = 0 if Ap14 == 4
+(6,859 real changes made)
+
+. replace kinder = 1 if Ap14>0 & Ap14<4
+(296,813 real changes made)
+
+. 
+. 
+. *repeated: dummy for any level
+. 
+. gen     repeated = .
+(331,852 missing values generated)
+
+. replace repeated = 0 if repitio_prim == 0 & repitio_sec == 0
+(236,181 real changes made)
+
+. replace repeated = 1 if repitio_prim == 1 | repitio_sec == 1
+(71,150 real changes made)
+
+. 
+. 
+. order year region idschool idclass idstudent
+
+. sort  year region idschool idclass idstudent
+
+. 
+. keep year region idschool idclass idstudent private urban women foreign ///
+>          child internet internet_phone educ_mother educ_father work kinder repeated
+
+. 
+. 
+. save "`data'/analytical/db2016.dta", replace
+file C:/research/student-strike/data/analytical/db2016.dta saved
+
+. 
+. 
+end of do-file
+
+. do "code/prepare2017.do"
+
+. set more off
+
+. clear all
+
+. 
+. /*=================
+>         prepare2017.do
+> ===================
+> 
+> *This do file
+> 1- Merges student with principal base
+> 2- Generates variables of interest
+> 
+> Remark: 2016 and 2017 dbs were already processed for a previous project and
+> couldn't recover the raw, original ones. So for those two cases I start from
+> an intermediate db and accustom them to this project
+> 
+> ====================================*/
+. 
+. 
+. *Directory structure
+. cd "C:/Users/juanc/Google Drive/research/student-strike"
+C:\Users\juanc\Google Drive\research\student-strike
+
+. loc data = "C:/research/student-strike/data"
+
+. loc db_merge = "`data'/raw/principal-student-2017.dta"
+
+. 
+. 
+. /*=======================================
+>         1) Merge Student with Principal DBs
+>                         (Only for 2019)
+> ========================================*/
+. 
+. *not for this year
+. 
+. 
+. 
+. /*=======================================
+>                 2) Variable Creation
+> ========================================*/
+. /*
+> 
+> 2.1) Test Scores
+> 2.2) Identifiers
+> 2.3) Socioeconomic variables
+> 
+> */
+. 
+. use `db_merge', clear
+
+. 
+. /*====================
+>         2.1) Test Scores
+> ======================*/
+. 
+. gen mscore = mpuntaje
+(19,416 missing values generated)
+
+. gen lscore = lpuntaje
+(13,490 missing values generated)
+
+. 
+. *(Log) Test Scores
+. 
+. * Lengua
+. gen log_lscore = log(lpuntaje)
+(13,490 missing values generated)
+
+. 
+. * Matematica
+. gen log_mscore = log(mpuntaje)
+(19,416 missing values generated)
+
+. 
+. 
+. label define leng2 1"Por debajo de nivel basico" 2"Nivel Basico" ///
+>         3"Nivel Satisfactorio" 4"Nivel Avanzado"
+
+. label values ldesemp leng2
+
+. 
+. label define mate2 1"Por debajo de nivel basico" 2"Nivel Basico" ///
+>         3"Nivel Satisfactorio" 4"Nivel Avanzado"
+
+. label values mdesemp mate2
+
+. 
+. 
+. 
+. 
+. *Standardized Test Scores
+. 
+. * Lengua
+. gen lscore_std = .
+(316,015 missing values generated)
+
+. replace lscore_std = lscore / 880
+(302,525 real changes made)
+
+. 
+. * Matematica
+. gen mscore_std = .
+(316,015 missing values generated)
+
+. replace mscore_std = mscore / 880
+(296,599 real changes made)
+
+. 
+. 
+. 
+. 
+. 
+. /*================================
+>                 2.2) Identifiers
+> ==================================*/
+. 
+. 
+. gen year = 2017
+
+. 
+. *encode cueanexo, gen(idschool)
+. gen idschool = cueanexo
+
+. encode claveseccion, gen(idclass)
+
+. 
+. bysort idclass: gen idstudent = _n
+
+. 
+. *rename region region_old
+. gen region = cod_provincia
+
+. *encode cod_provincia, gen(region)
+. 
+. 
+. 
+. 
+. 
+. /*================================
+>         2.3) Socioeconomic variables
+> ==================================*/
+. 
+. 
+. 
+. *private (vs public school)
+. gen     private = .
+(316,015 missing values generated)
+
+. replace private = 0 if sector == 1
+(181,622 real changes made)
+
+. replace private = 1 if sector == 2
+(134,393 real changes made)
+
+. 
+. *urban (vs rural school)
+. gen     urban = .
+(316,015 missing values generated)
+
+. replace urban = 0 if ambito == 1
+(289,589 real changes made)
+
+. replace urban = 1 if ambito == 2
+(26,426 real changes made)
+
+. 
+. 
+. *dummy women
+. gen     women = 0 if ap2 == 1
+(177,792 missing values generated)
+
+. replace women = 1 if ap2 == 2
+(168,307 real changes made)
+
+. 
+. 
+. *foreign
+. *0=Argentina, 1=Any other country
+. gen     foreign = .
+(316,015 missing values generated)
+
+. replace foreign = 1 if ap3a==1
+(301,812 real changes made)
+
+. replace foreign = 0 if ap3a>1 & ap3a<=8
+(6,167 real changes made)
+
+. 
+. label define foreign 0 "Argentine" 1 "Foreign"
+
+. label values foreign foreign
+
+. 
+. 
+. 
+. *child: if has any child
+. gen     child = .
+(316,015 missing values generated)
+
+. replace child = 0 if ap13 == 2
+(288,283 real changes made)
+
+. replace child = 1 if ap13 == 1
+(9,712 real changes made)
+
+. 
+. 
+. *internet: if has internet connection at home
+. *rename internet internet_old
+. gen     internet = .
+(316,015 missing values generated)
+
+. // replace internet = 0 if ap11_08 == 2
+. // replace internet = 1 if ap11_08 == 1
+. 
+. 
+. *internet_phone: if can access internet through internet_phone
+. gen       internet_phone = .
+(316,015 missing values generated)
+
+. // replace   internet_phone = 0 if ap13 == 2
+. // replace   internet_phone = 1 if ap13 == 1
+. // label var internet_phone "If can access internet via phone"
+. 
+. 
+. *educ_mother: mother's education level
+.         *1=prii 2=pric 3=seci 4=secc 5=supi/supc        
+. gen              educ_mother = .
+(316,015 missing values generated)
+
+. replace          educ_mother = 1 if ap10 == 1 | ap10 == 2 
+(20,087 real changes made)
+
+. replace          educ_mother = 2 if ap10 == 3
+(40,250 real changes made)
+
+. replace          educ_mother = 3 if ap10 == 4
+(52,583 real changes made)
+
+. replace          educ_mother = 4 if ap10 == 5
+(69,037 real changes made)
+
+. replace          educ_mother = 5 if ap10 == 6 | ap10 == 7
+(113,630 real changes made)
+
+. label define educ_mother        1"Primary Incomplete"   ///
+>                                                         2"Primary Complete"     ///
+>                                                         3"Secondary Incomplete" ///
+>                                                         4"Secondary Complete"   ///
+>                                                         5"Superior (Complete or incomplete)"
+
+. label values educ_mother educ_mother
+
+. 
+. 
+. 
+. *educ_father: father's education level
+.         *1=prii 2=pric 3=seci 4=secc 5=supi/supc        
+. gen              educ_father = .
+(316,015 missing values generated)
+
+. replace          educ_father = 1 if ap11 == 1 | ap11 == 2 
+(25,366 real changes made)
+
+. replace          educ_father = 2 if ap11 == 3
+(40,267 real changes made)
+
+. replace          educ_father = 3 if ap11 == 4
+(59,518 real changes made)
+
+. replace          educ_father = 4 if ap11 == 5
+(65,528 real changes made)
+
+. replace          educ_father = 5 if ap11 == 6 | ap11 == 7
+(83,274 real changes made)
+
+. label define educ_father        1"Primary Incomplete"   ///
+>                                                         2"Primary Complete"     ///
+>                                                         3"Secondary Incomplete" ///
+>                                                         4"Secondary Complete"   ///
+>                                                         5"Superior (Complete or incomplete)"
+
+. label values educ_father educ_father
+
+. 
+. 
+. 
+. *work: if works outside home
+. gen     work = .
+(316,015 missing values generated)
+
+. replace work = 0 if ap17 == 2
+(238,203 real changes made)
+
+. replace work = 1 if ap17 == 1
+(62,808 real changes made)
+
+. 
+. 
+. 
+. *kinder: if went to kindergarden
+. gen     kinder = .
+(316,015 missing values generated)
+
+. replace kinder = 0 if ap19 == 4
+(5,551 real changes made)
+
+. replace kinder = 1 if ap19>0 & ap19<4
+(296,125 real changes made)
+
+. 
+. 
+. *repeated: dummy for any level
+. 
+. gen     repeated = .
+(316,015 missing values generated)
+
+. replace repeated = 0 if repitio_prim == 0 & repitio_sec == 0
+(239,043 real changes made)
+
+. replace repeated = 1 if repitio_prim == 1 | repitio_sec == 1
+(67,439 real changes made)
+
+. 
+. 
+. order year region idschool idclass idstudent
+
+. sort  year region idschool idclass idstudent
+
+. 
+. keep year region idschool idclass idstudent private urban women foreign ///
+>          child internet internet_phone educ_mother educ_father work kinder repeated
+
+. 
+. 
+. save "`data'/analytical/db2017.dta", replace
+file C:/research/student-strike/data/analytical/db2017.dta saved
+
+. 
+end of do-file
+
+. *do "code/prepare2019.do"
+. do "code/prepare-panel.do"
+
+. set more off
+
+. clear all
+
+. 
+. /*=====================
+>         prepare-panel.do
+> ========================
+> 
+> This do file:
+> 
+> 1) Makes panel of 2016/2017/2019 DBs
+> 2) Generates treatment variable
+> 
+> ==============================*/
+. 
+. *Dir Structure
+. cd "C:/Users/juanc/Google Drive/research/student-strike"
+C:\Users\juanc\Google Drive\research\student-strike
+
+. loc data = "C:/research/student-strike/data"
+
+. loc db2016 = "`data'/analytical/db2016.dta"
+
+. loc db2017 = "`data'/analytical/db2017.dta"
+
+. loc db2019 = "`data'/analytical/db2019.dta"
+
+. 
+. 
+. 
+. 
+. /*================================
+>                 1) Panel creation
+> ==================================*/
+. 
+. 
+. append using `db2016' `db2017' /// `db2019'
+> 
+(note: variable region was byte, now float to accommodate using data's values)
+(note: variable idschool was long, now double to accommodate using data's values)
+(label educ_father already defined)
+(label educ_mother already defined)
+(label foreign already defined)
+(label idclass already defined)
+
+. 
+. 
+. /*================================
+>                 2) Treatment variable
+> ==================================*/
+. 
+. 
+. *region: 2=CABA
+. gen strike = 0
+
+. replace strike = 1 if year == 2017 & region == 2 & private == 0
+(7,746 real changes made)
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. save "`data'/analytical/db-panel.dta", replace
+file C:/research/student-strike/data/analytical/db-panel.dta saved
+
+. 
+. 
+. 
+end of do-file
+
+. 
+end of do-file
+
+. *do "$student_strike/code/stats.do"
+. *do "$student_strike/code/1_process_raw_data.do"
+. *do "$student_strike/code/2_clean_data.do"
+. *do "$student_strike/code/3_regressions.do"
+. *do "$student_strike/code/4_make_tables_figures.do"
+. 
+. * End log
+. di "End date and time: $S_DATE $S_TIME"
+End date and time:  7 May 2021 14:40:09
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/juanc/Google Drive/research/student-strike/code/logs/log_2021.05.07_14.39.50.txt
+  log type:  text
+ closed on:   7 May 2021, 14:40:09
+------------------------------------------------------------------------------------------------------------------------------------------------
