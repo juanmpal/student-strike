@@ -54,7 +54,7 @@ drop if _merge == 2
 drop _merge
 
 
-destring ap* ldesemp mdesemp, replace
+destring ap* ldesemp mdesemp repitencia_dicotomica, replace
 destring TEM TEL, replace dpcomma
 
 
@@ -70,6 +70,7 @@ destring TEM TEL, replace dpcomma
 2.1) Test Scores
 2.2) Identifiers
 2.3) Socioeconomic variables
+2.4) Weights
 
 */
 
@@ -83,10 +84,10 @@ gen lscore = TEM
 *(Log) Test Scores
 
 * Lengua
-gen log_lscore = log(lpuntaje)
+gen log_lscore = log(lscore)
 
 * Matematica
-gen log_mscore = log(mpuntaje)
+gen log_mscore = log(mscore)
 
 
 label define leng 1"Por debajo de nivel basico" 2"Nivel Basico" ///
@@ -129,9 +130,6 @@ bysort idclass: gen idstudent = _n
 gen region = cod_provincia
 *encode cod_provincia, gen(region)
 
-order region idschool idclass idstudent
-sort  region idschool idclass idstudent
-
 
 
 
@@ -142,19 +140,19 @@ sort  region idschool idclass idstudent
 
 
 *private (vs public school)
-gen 	private = .
-replace private = 0 if sector == 1
-replace private = 1 if sector == 2
+gen 	public = .
+replace public = 1 if sector == 1
+replace public = 0 if sector == 2
 
 *urban (vs rural school)
 gen 	urban = .
-replace urban = 0 if ambito == 1
-replace urban = 1 if ambito == 2
+replace urban = 0 if ambito == 2
+replace urban = 1 if ambito == 1
 
 
-*dummy women
-gen 	women = 0 if ap2 == 1
-replace women = 1 if ap2 == 2
+*dummy woman
+gen 	woman = 0 if ap02 == 1
+replace woman = 1 if ap02 == 2
 
 
 *foreign
@@ -163,7 +161,7 @@ gen 	foreign = .
 replace foreign = 0 if ap03 == 1
 replace foreign = 1 if ap03 > 1 & ap03 != .
 
-label define foreign 0 "Argentine" "Foreign"
+label define foreign 0 "Argentine" 1 "Foreign"
 label values foreign foreign
 
 
@@ -240,9 +238,38 @@ replace repeated = 1 if repitencia_dicotomica == 1
 
 
 
-keep region idschool idclass idstudent private urban women foreign child ///
-	 internet internet_phone educ_mother educ_father work kinder repeated
 
 
-save "`data'/analyitical/db2019.dta", replace
+/*================================
+		2.4) Weights
+==================================*/
+
+
+gen weight = ponder
+gen lweight = lpondera
+gen mweight = mpondera
+
+
+
+destring weight lweight mweight, replace dpcomma
+
+
+
+
+*===============================================
+
+
+
+order year region idschool idclass idstudent
+sort  year region idschool idclass idstudent
+
+keep year region idschool idclass idstudent public urban woman foreign ///
+	 child internet internet_phone educ_mother educ_father work kinder repeated ///
+	 mscore mscore_std log_mscore lscore lscore_std log_lscore weight lweight mweight
+
+
+
+	 
+
+save "`data'/analytical/db2019.dta", replace
 
